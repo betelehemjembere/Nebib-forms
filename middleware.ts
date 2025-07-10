@@ -2,12 +2,18 @@ import { betterFetch } from "@better-fetch/fetch";
 import type { Session } from "better-auth/types";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PROD_BASE_URL = "https://nebib-forms-production.up.railway.app";
+
 export default async function authMiddleware(request: NextRequest) {
   try {
+    // Use production URL if running in production, otherwise use origin
+    const isProd = request.nextUrl.hostname.endsWith("railway.app");
+    const baseURL = isProd ? PROD_BASE_URL : request.nextUrl.origin;
+
     const { data: session, error } = await betterFetch<Session>(
       "/api/auth/get-session",
       {
-        baseURL: request.nextUrl.origin,
+        baseURL,
         headers: {
           cookie: request.headers.get("cookie") || "",
         },
